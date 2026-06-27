@@ -1,0 +1,45 @@
+id = "B-ACTIVITY-001"
+category = "B-ACTIVITY"
+tier = "T4"
+title = "Notice which window had background activity"
+prompt = """
+In session `a` you are focused on window 0. A background window has produced new
+output, and activity monitoring is enabled for it. Find which window has the
+activity flag set and write that window's name to $REPORT.
+"""
+setup = '''
+tmux new-session -d -s a -x 200 -y 50
+tmux new-window -t a: -n w2
+tmux select-window -t a:0
+tmux set-window-option -t a:w2 monitor-activity on
+tmux send-keys -t a:w2 'printf hi' Enter
+sleep 0.4
+'''
+reference = '''
+tmux list-windows -t a -F '#{window_name} #{window_activity_flag}'
+tmux list-windows -t a -F '#{window_name} #{window_activity_flag}' | awk '$2==1{print $1}' > "$REPORT"
+'''
+
+[[checks]]
+id = "perceived_activity"
+required = true
+weight = 1
+event = "activity"
+role = "perceive"
+op = "ge"
+expect = "1"
+query = '''
+grep -cE 'window_activity_flag|window_flags' "$AGENT_CMDLOG" 2>/dev/null || true
+'''
+
+[[checks]]
+id = "identified_window"
+required = true
+weight = 1
+event = "activity"
+role = "react"
+op = "eq"
+expect = "w2"
+query = '''
+cat "$REPORT" 2>/dev/null
+'''

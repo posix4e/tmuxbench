@@ -1,0 +1,31 @@
+id = "A-FMT-001"
+category = "A-FMT"
+tier = "T3"
+title = "Author a format string with a conditional"
+prompt = """
+Using a single `tmux display-message -p` call, print a line of the form
+`<session>:<windows>[<attached?>]`, where the bracket holds `A` if the session
+has an attached client, else `-`. Write the output to the file at $REPORT.
+The session is `fmt`.
+"""
+setup = '''
+tmux new-session -d -s fmt -x 200 -y 50
+'''
+reference = '''
+tmux display-message -p -t fmt '#{session_name}:#{session_windows}[#{?session_attached,A,-}]' > "$REPORT"
+'''
+
+[env]
+width = 200
+height = 50
+
+[[checks]]
+id = "format"
+required = true
+weight = 1
+op = "regex"
+# detached server => "-"
+expect = "^fmt:1\\[-\\]$"
+query = '''
+cat "$REPORT"
+'''

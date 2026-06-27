@@ -1,0 +1,42 @@
+id = "A-PANE-001"
+category = "A-PANE"
+tier = "T2"
+title = "Split a window into two side-by-side panes"
+prompt = """
+In session `web`, window `editor`, split the window into two side-by-side
+(left/right) panes. Leave it at exactly two panes.
+"""
+setup = '''
+tmux new-session -d -s web -x 200 -y 50
+tmux rename-window -t web:0 editor
+'''
+reference = '''
+tmux split-window -h -t web:editor
+'''
+
+# NOTE: tables ([env], [[checks]]) MUST come after all top-level keys above —
+# in TOML any key after a [table] header belongs to that table.
+[env]
+width = 200
+height = 50
+
+[[checks]]
+id = "two_panes"
+required = true
+weight = 1
+op = "eq"
+expect = "2"
+query = '''
+tmux display-message -p -t web:editor '#{window_panes}'
+'''
+
+[[checks]]
+id = "side_by_side"
+required = true
+weight = 1
+op = "eq"
+expect = "1"
+# left/right split => both panes share the same height; one unique height value
+query = '''
+tmux list-panes -t web:editor -F '#{pane_height}' | sort -u | wc -l | tr -d ' '
+'''

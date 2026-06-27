@@ -1,0 +1,24 @@
+#!/bin/sh
+# tmuxbench command-logging shim.
+# Scopes every `tmux` call to the per-task isolated server and logs the
+# invocation. Put this directory first on PATH so the model (and the task
+# scripts) type plain `tmux ...` while we transparently add -L/-f.
+#
+# Required env (set by the runner):
+#   BENCH_SOCKET     unique socket name for this task's server
+#   BENCH_REAL_TMUX  absolute path to the real tmux binary
+# Optional:
+#   BENCH_CMDLOG     file to append each invocation to (one per line)
+
+real="${BENCH_REAL_TMUX:-tmux}"
+
+if [ -z "$BENCH_SOCKET" ]; then
+  echo "tmux-shim: BENCH_SOCKET not set" >&2
+  exit 64
+fi
+
+if [ -n "$BENCH_CMDLOG" ]; then
+  printf 'tmux %s\n' "$*" >> "$BENCH_CMDLOG" 2>/dev/null
+fi
+
+exec "$real" -L "$BENCH_SOCKET" -f /dev/null "$@"

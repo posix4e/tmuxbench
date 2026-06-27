@@ -1,0 +1,50 @@
+id = "B-INTERRUPT-001"
+category = "B-INTERRUPT"
+tier = "T4"
+title = "Respond to a worker blocked on an interrupt"
+prompt = """
+In session `job`, a worker in window 0 has stopped mid-run and is waiting on
+something before it can continue. Find out what it is asking for and give it what
+it needs so it can finish.
+"""
+# The worker blocks on a read, printing a prompt into its pane. The agent must
+# perceive the blocked state (capture-pane) and react (send the requested input).
+# It records what it received to $SINK and signals a wait-for channel.
+setup = '''
+tmux new-session -d -s job -x 200 -y 50
+tmux send-keys -t job:0 'printf "INTERRUPT: reply APPROVE to continue > "; read ans; printf "%s" "$ans" > "$SINK"; tmux wait-for -S approved' Enter
+sleep 0.5
+'''
+# reference HANDLES the interrupt: perceive (capture-pane shows the prompt) then
+# react (send APPROVE). wait-for syncs so the worker has recorded the reply.
+reference = '''
+tmux capture-pane -t job:0 -p | tail -3
+tmux send-keys -t job:0 'APPROVE' Enter
+tmux wait-for approved
+'''
+
+[[checks]]
+id = "perceived_interrupt"
+required = true
+weight = 1
+event = "interrupt"
+role = "perceive"
+op = "ge"
+expect = "1"
+# did the AGENT read the blocked pane's contents?
+query = '''
+grep -cE 'capture-pane' "$AGENT_CMDLOG" 2>/dev/null || true
+'''
+
+[[checks]]
+id = "unblocked_worker"
+required = true
+weight = 1
+event = "interrupt"
+role = "react"
+op = "eq"
+expect = "APPROVE"
+# the worker received the approval and recorded it
+query = '''
+sleep 0.3; cat "$SINK" 2>/dev/null
+'''

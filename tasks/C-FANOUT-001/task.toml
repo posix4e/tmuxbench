@@ -1,0 +1,39 @@
+id = "C-FANOUT-001"
+category = "C-ORCH"
+tier = "T4"
+title = "Fan work across two panes and aggregate"
+prompt = """
+In session `web`, split the window into two panes. In one pane write the letter
+A to the file $SINK.0; in the other write B to the file $SINK.1. Then combine
+both results, one letter per line, sorted, into $REPORT.
+"""
+setup = '''
+tmux new-session -d -s web -x 200 -y 50
+'''
+reference = '''
+tmux split-window -t web -h
+tmux send-keys -t web.0 'echo A > '"$SINK"'.0' Enter
+tmux send-keys -t web.1 'echo B > '"$SINK"'.1' Enter
+sleep 0.4
+cat "$SINK".0 "$SINK".1 | sort > "$REPORT"
+'''
+
+[[checks]]
+id = "two_panes"
+required = true
+weight = 1
+op = "eq"
+expect = "2"
+query = '''
+tmux display-message -p -t web '#{window_panes}'
+'''
+
+[[checks]]
+id = "aggregate"
+required = true
+weight = 1
+op = "eq"
+expect = "A,B"
+query = '''
+cat "$REPORT" 2>/dev/null | sort | paste -sd, -
+'''

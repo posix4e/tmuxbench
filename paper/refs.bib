@@ -1,0 +1,89 @@
+% refs.bib — tmuxbench paper
+% Missing events on interactive control planes (the observable failure),
+% with supporting work on terminal benchmarks, delegation, and agentic RL.
+% arXiv IDs from literature search, June 2026. Author lists best-effort;
+% re-verify against arXiv before camera-ready.
+
+% ============================================================
+% Missing / asynchronous events (the observable failure)
+% ============================================================
+
+@article{robotouille_2025,
+  title  = {Robotouille: An Asynchronous Planning Benchmark for LLM Agents},
+  author = {Gonzalez-Pumariega, and {Su Yean}, and Sunkara, and Choudhury, Sanjiban},
+  journal= {arXiv preprint arXiv:2502.05227},
+  year   = {2025},
+  note   = {ReAct (gpt-4o) 47% synchronous vs 11% asynchronous; agents must manage overlapping tasks and interruptions. The motivating async-collapse statistic.}
+}
+
+@article{interruptbench_2026,
+  title  = {When Users Change Their Mind: Evaluating Interruptible Agents in Long-Horizon Web Navigation},
+  author = {Anonymous},
+  journal= {arXiv preprint arXiv:2604.00892},
+  year   = {2026},
+  note   = {InterruptBench; handling mid-task interruptions remains hard for frontier LLMs.}
+}
+
+@article{asynclm_2024,
+  title  = {Asynchronous LLM Function Calling},
+  author = {Gim, and Lee, and Zhong, },
+  journal= {arXiv preprint arXiv:2412.07017},
+  year   = {2024},
+  note   = {Interrupt mechanism to notify the model when calls return; fine-tuning needed even to handle interrupt semantics -> evidence post-training shapes async handling.}
+}
+
+% ============================================================
+% Supporting — terminal benchmarks (gap) & stateful delegation
+% ============================================================
+
+@article{terminalbench_2026,
+  title  = {Terminal-Bench: Benchmarking Agents on Hard, Realistic Tasks in Command Line Interfaces},
+  author = {Merrill, and Shaw, and Carlini, and others},
+  journal= {arXiv preprint arXiv:2601.11868},
+  year   = {2026},
+  note   = {89 Docker tasks; verifies final container state only; single headless terminal, Bash only. No tmux multiplexing, async events, or sub-agents.}
+}
+
+@article{terminalworld_2026,
+  title  = {TerminalWorld: Benchmarking Agents on Real-World Terminal Tasks},
+  author = {{EuniAI}},
+  journal= {arXiv preprint arXiv:2605.22535},
+  year   = {2026},
+  note   = {Tasks from real recordings; weak correlation (r=0.20) with Terminal-Bench -> curated benchmarks under-sample real interactive use.}
+}
+
+@article{entcollabbench_2026,
+  title  = {Beyond the All-in-One Agent: Benchmarking Role-Specialized Multi-Agent Collaboration in Enterprise Workflows},
+  author = {Anonymous},
+  journal= {arXiv preprint arXiv:2605.08761},
+  year   = {2026},
+  note   = {78.33% subtask vs 50.00% task accuracy; agents omit delegation, pass insufficient context, leave persistent wrong state. Stateful delegation collapse.}
+}
+
+% ============================================================
+% Context — agentic RL reshapes tool use
+% ============================================================
+
+@article{agenticrl_survey_2025,
+  title  = {The Landscape of Agentic Reinforcement Learning for Large Language Models: A Survey},
+  author = {Zhang, Guibin and others},
+  journal= {arXiv preprint arXiv:2509.02547},
+  year   = {2025},
+  note   = {RL transforms LLM capabilities into adaptive agentic behavior; single-step MDP to temporally-extended POMDP.}
+}
+
+@article{agentrl_scaling_law_2025,
+  title  = {Agent RL Scaling Law: Agent RL with Spontaneous Code Execution for Mathematical Problem Solving},
+  author = {Anonymous},
+  journal= {arXiv preprint arXiv:2505.07773},
+  year   = {2025},
+  note   = {Outcome-only RL grows tool use from zero; RL reshapes tool-calling behavior.}
+}
+
+@article{verltool_2025,
+  title  = {VerlTool: Towards Holistic Agentic Reinforcement Learning with Tool Use},
+  author = {Anonymous},
+  journal= {arXiv preprint arXiv:2509.01055},
+  year   = {2025},
+  note   = {Agentic RL with tool use as multi-turn trajectories with asynchronous rollout; async tool-RL is an infrastructure frontier.}
+}

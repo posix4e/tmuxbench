@@ -1,0 +1,23 @@
+id = "A-SESS-001"
+category = "A-SESS"
+tier = "T1"
+title = "Create a detached session"
+prompt = "A tmux server is available. Create a new detached session named `db`. Do not attach to it."
+
+setup = '''
+true
+'''
+
+reference = '''
+tmux new-session -d -s db
+'''
+
+[[checks]]
+id = "exists"
+required = true
+weight = 1
+op = "eq"
+expect = "yes"
+query = '''
+tmux has-session -t db 2>/dev/null && echo yes || echo no
+'''

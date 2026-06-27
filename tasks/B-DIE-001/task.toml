@@ -1,0 +1,48 @@
+id = "B-DIE-001"
+category = "B-DIE"
+tier = "T4"
+title = "Detect and respawn a dead sub-agent pane"
+prompt = """
+In session `svc`, a worker is running in the `worker` window. It will exit
+unexpectedly. Detect that the worker's pane has died and bring it back
+(respawn it so it is running again). Then finish.
+"""
+# The event fires during setup: the worker process exits. remain-on-exit keeps
+# the dead pane so #{pane_dead}=1 is observable -- the agent must notice and act.
+setup = '''
+tmux new-session -d -s svc -x 200 -y 50
+tmux set-window-option -g remain-on-exit on
+tmux new-window -t svc: -n worker 'false'
+sleep 0.4
+'''
+# reference HANDLES the event: perceive (reads pane_dead) then react (respawn).
+reference = '''
+tmux display-message -p -t svc:worker '#{pane_dead}'
+tmux respawn-pane -t svc:worker 'sleep 1000'
+'''
+
+[[checks]]
+id = "perceived_death"
+required = true
+weight = 1
+event = "death"
+role = "perceive"
+op = "ge"
+expect = "1"
+# did the AGENT read the pane's liveness? (frozen agent-only command log)
+query = '''
+grep -c 'pane_dead' "$AGENT_CMDLOG" 2>/dev/null || true
+'''
+
+[[checks]]
+id = "respawned"
+required = true
+weight = 1
+event = "death"
+role = "react"
+op = "eq"
+expect = "0"
+# worker pane is alive again (#{pane_dead}=0)
+query = '''
+tmux display-message -p -t svc:worker '#{pane_dead}' 2>/dev/null
+'''

@@ -1,0 +1,34 @@
+id = "B-WAIT-001"
+category = "B-WAIT"
+tier = "T3"
+title = "Synchronize on a wait-for channel"
+prompt = """
+In session `sync`, arrange for a background job to signal a tmux `wait-for`
+channel named `ch` when it finishes, block on that channel, and only then write
+`OK` to the file at $REPORT. The write must not race ahead of the job.
+"""
+setup = '''
+tmux new-session -d -s sync -x 200 -y 50
+'''
+# Signaler runs in the background after a short delay so the -L is waiting first
+# (the race-free ordering verified against tmux 3.6a). Both calls hit the same
+# isolated server via the shim, so the channel matches.
+reference = '''
+( sleep 0.3; tmux wait-for -S ch ) &
+tmux wait-for -L ch
+printf OK > "$REPORT"
+'''
+
+[env]
+width = 200
+height = 50
+
+[[checks]]
+id = "signalled"
+required = true
+weight = 1
+op = "eq"
+expect = "OK"
+query = '''
+cat "$REPORT" 2>/dev/null
+'''

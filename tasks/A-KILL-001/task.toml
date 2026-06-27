@@ -1,0 +1,27 @@
+id = "A-KILL-001"
+category = "A-WIN"
+tier = "T2"
+title = "Kill the middle window"
+prompt = """
+Session `m` has three windows named `a`, `b`, `c` (in that order). Remove window
+`b`, leaving `a` and `c`.
+"""
+setup = '''
+tmux new-session -d -s m -x 200 -y 50
+tmux rename-window -t m:0 a
+tmux new-window -t m: -n b
+tmux new-window -t m: -n c
+'''
+reference = '''
+tmux kill-window -t m:b
+'''
+
+[[checks]]
+id = "windows"
+required = true
+weight = 1
+op = "eq"
+expect = "a,c"
+query = '''
+tmux list-windows -t m -F '#{window_name}' | paste -sd, -
+'''

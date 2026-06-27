@@ -1,0 +1,26 @@
+id = "A-CAP-001"
+category = "A-CAP"
+tier = "T2"
+title = "Compute a value in a pane and report it"
+prompt = """
+In session `calc`, use the shell running in the pane to compute 6 * 7, then
+write the numeric result to the file at $REPORT.
+"""
+setup = '''
+tmux new-session -d -s calc -x 200 -y 50
+'''
+reference = '''
+tmux send-keys -t calc 'expr 6 \* 7' Enter
+sleep 0.3
+tmux capture-pane -p -t calc | grep -E '^[0-9]+$' | tail -1 > "$REPORT"
+'''
+
+[[checks]]
+id = "answer"
+required = true
+weight = 1
+op = "contains"
+expect = "42"
+query = '''
+cat "$REPORT" 2>/dev/null
+'''

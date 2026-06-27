@@ -1,0 +1,49 @@
+id = "B-BELL-001"
+category = "B-BELL"
+tier = "T4"
+title = "Notice which background window rang the bell"
+prompt = """
+In session `srv` you are focused on window 0. A background window rang the
+terminal bell (BEL), and bell monitoring is enabled for it. Find which window has
+the bell flag set and write that window's name to $REPORT.
+"""
+# The bell fires during setup: a background window emits BEL while window 0 is
+# current. monitor-bell makes #{window_bell_flag}=1 observable on that window.
+setup = '''
+tmux new-session -d -s srv -x 200 -y 50
+tmux new-window -t srv: -n bg
+tmux select-window -t srv:0
+tmux set-window-option -t srv:bg monitor-bell on
+tmux send-keys -t srv:bg 'printf "\\a"' Enter
+sleep 0.5
+'''
+# reference HANDLES the event: perceive (reads bell flag) then react (names it).
+reference = '''
+tmux list-windows -t srv -F '#{window_name} #{window_bell_flag}'
+tmux list-windows -t srv -F '#{window_name} #{window_bell_flag}' | awk '$2==1{print $1}' > "$REPORT"
+'''
+
+[[checks]]
+id = "perceived_bell"
+required = true
+weight = 1
+event = "bell"
+role = "perceive"
+op = "ge"
+expect = "1"
+# did the AGENT read the bell flag? (frozen agent-only command log)
+query = '''
+grep -cE 'window_bell_flag|monitor-bell' "$AGENT_CMDLOG" 2>/dev/null || true
+'''
+
+[[checks]]
+id = "identified_window"
+required = true
+weight = 1
+event = "bell"
+role = "react"
+op = "eq"
+expect = "bg"
+query = '''
+cat "$REPORT" 2>/dev/null
+'''
